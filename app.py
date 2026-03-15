@@ -19,37 +19,30 @@ def mod_invert(a, m):
 
 
 def calculate_determinant(a, m):
-    """计算行列式的值（模m）"""
-    leng = len(a)
-    if leng == 2:
-        return (a[0][0] * a[1][1] - a[0][1] * a[1][0]) % m
-    if leng == 1:
-        return a[0][0] % m
-    if leng == 0:
+    """计算行列式的值（模m）- 使用Laplace展开，支持任意n×n矩阵"""
+    n = len(a)
+    if n == 0:
         return None
+    if n == 1:
+        return a[0][0] % m
+    if n == 2:
+        return (a[0][0] * a[1][1] - a[0][1] * a[1][0]) % m
 
-    add, sub = 0, 0
-    # 对角线加法
-    for i in range(0, leng):
-        y, x, temp = i, 0, 1
-        for j in range(0, leng):
-            temp *= a[x][y]
-            x += 1
-            x = x % leng
-            y += 1
-            y = y % leng
-        add += temp
-    # 反对角线减法
-    for i in range(leng - 1, -1, -1):
-        y, x, temp = i, 0, 1
-        for j in range(0, leng):
-            temp *= a[x][y]
-            x -= 1
-            x = x % leng
-            y += 1
-            y = y % leng
-        sub -= temp
-    return (sub + add) % m
+    # 使用Laplace展开按第一行展开
+    det = 0
+    for j in range(n):
+        # 构造余子式矩阵（去掉第0行第j列）
+        minor = []
+        for i in range(1, n):
+            row = []
+            for k in range(n):
+                if k != j:
+                    row.append(a[i][k])
+            minor.append(row)
+        # 递归计算余子式的行列式
+        cofactor = ((-1) ** j) * calculate_determinant(minor, m)
+        det += a[0][j] * cofactor
+    return det % m
 
 
 def matrix_transpose(matrix):
